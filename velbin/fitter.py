@@ -57,9 +57,10 @@ class BinaryFit(object):
         likelihood_single = sp.exp(-(self.velocity - vmean) ** 2 / (2 * (self.sigvel ** 2. + vdisp ** 2.))) / sp.sqrt(2 * sp.pi * (self.sigvel ** 2. + vdisp ** 2.))
 
         p_bound = sp.special.erf((vmean + self.vbin[1:-1, None] * self.mass ** (1. / 3.) - self.velocity) / sp.sqrt(2. * (self.sigvel ** 2. + vdisp ** 2.))) * .5 + .5
-        p_long = sp.append(sp.append(sp.zeros((1, len(nvel))), p_bound, 0), sp.ones((1, len(nvel))), 0)
+        p_long = sp.append(sp.append(sp.zeros((1, nvel)), p_bound, 0), sp.ones((1, nvel)), 0)
         weight = p_long[1:, :] - p_long[:-1, :]
-        likelihood_binary = self.pbin * weight / self.mass ** (1. / 3.)
+        likelihood_binary = sp.sum(self.pbin * weight / self.mass ** (1. / 3.), 0)
 
         log_likelihood_detection = sp.log(sp.prod(1 - fbin * self.pdet_single) * sp.prod(fbin * self.pdet_rvvar))
+        return sp.log(fbin_new * likelihood_binary + (1 - fbin_new) * likelihood_single)
         return sp.sum(sp.log(fbin_new * likelihood_binary + (1 - fbin_new) * likelihood_single)) + log_likelihood_detection

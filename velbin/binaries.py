@@ -172,7 +172,7 @@ class OrbitalParameters(sp.recarray):
         - `emax`: Maximum eccentricity (default: set by tidal circularization)
         """
         nbinaries = self.size
-        if emax == 'from_period':
+        if emax == 'tidal':
             emax =  .5 * (0.95 + sp.tanh(0.6 * sp.log10(self['period'] * 365.25) - 1.7))
             emax[emax < emin] = emin
         if eccentricity == 'flat':
@@ -232,7 +232,7 @@ class OrbitalParameters(sp.recarray):
         - `log_maxv`: 10_log maximum of the largest velocity bin (default: logarithm of maximum velocity)
         - `log_stepv`: step size in 10_log(velocity) space.
         """
-        vel = sp.sort(sp.sum(self['velocity'] ** 2., -1) ** .5)
+        vel = sp.sort(sp.sum(self.velocity(1.) ** 2., 0) ** .5)
         cum_weight = sp.cumsum(1. / vel[::-1])[::-1]
 
         if log_maxv == None:
@@ -257,7 +257,7 @@ class OrbitalParameters(sp.recarray):
             pdist.append(est + sp.sum((vuse - lower) / vuse) / (upper - lower))
 
         vbound = sp.append(-vbord[::-1], sp.append(0, vbord))
-        prob = sp.append(pdist[::-1], pdist) / 2.
+        prob = sp.append(pdist[::-1], pdist) / 2.  / len(vel)
 
         return fitter.BinaryFit(velocity, sigvel, mass, vbound, prob)
 
@@ -280,9 +280,11 @@ class OrbitalParameters(sp.recarray):
         unique_dates = sp.unique(reduce(sp.append, dates))
         vbin = {}
         for date in unique_dates:
-            vbin.update({date: self.properties.value('velocity', time=date)[0]})
+            vbin.update({date: self.velocity(1., time=date)[0]})
 
         vmean = []
+        sigmean = []
+        single_mass = []
         pdet_single = []
         pdet_rvvar = []
         pbin = []
@@ -293,35 +295,43 @@ class OrbitalParameters(sp.recarray):
             epochs, mult_vel, mult_sigvel = sp.broadcast_arrays(epochs, mult_vel, mult_sigvel)
             if epochs.size == 1:
                 mean_rv = mult_vel[0]
-                rv_offset = vbin[epochs[0]] * pmass ** 1. / 3. + sp.randn(self.size) * mult_sigvel[0]
+                mean_sig = mult_sigvel[0]
+                rv_binoffset = vbin[epochs[0]]# + sp.randn(self.size) * mult_sigvel[0]
                 pdet = 0.
                 rvvariable = False
             else:
                 weight = mult_sigvel ** -2
                 rv_offset_per_epoch = sp.zeros((self.size, len(epochs)))
+                rv_binoffset_per_epoch = sp.zeros((self.size, len(epochs)))
                 for ixepoch, (date, sv) in enumerate(zip(epochs, mult_sigvel)):
-                    rv_offset_per_epoch[:, ixepoch] = vbin[date] * pmass ** (1. / 3.) + sp.randn(self.size) * sv
+                    rv_binoffset_per_epoch[:, ixepoch] = vbin[date]
+                    rv_offset_per_epoch[:, ixepoch] = rv_binoffset_per_epoch[:, ixepoch] * pmass ** (1. / 3.)  + sp.randn(self.size) * sv
                 rv_offset_mean = sp.sum(rv_offset_per_epoch * weight[sp.newaxis, :], -1) / sp.sum(weight)
                 chisq = sp.sum((rv_offset_per_epoch - rv_offset_mean[:, sp.newaxis]) ** 2. * weight[sp.newaxis, :], -1)
                 isdetected = sp.stats.chisqprob(chisq, len(epochs) - 1) < pfalse
                 pdet = float(sp.sum(isdetected)) / isdetected.size
-                rv_offset = rv_offset_mean[~isdetected]
+                rv_binoffset = (sp.sum(rv_binoffset_per_epoch * weight[sp.newaxis, :], -1) / sp.sum(weight))[~isdetected]
 
                 mean_rv = sp.sum(mult_vel * weight) / sp.sum(weight)
+                mean_sig = sp.sum(weight) ** -.5
                 rvvariable = sp.stats.chisqprob(sp.sum((mean_rv - mult_vel) ** 2 * weight), len(epochs) - 1) < pfalse
             if rvvariable:
                 pdet_rvvar.append(pdet)
             else:
                 vmean.append(mean_rv)
+                sigmean.append(mean_sig)
                 pdet_single.append(pdet)
-                prob_bin = sp.histogram(abs(rv_offset), bins=sp.append(0, vbord))[0] * 1. / rv_offset.size
-                pbin.append(sp.append(prob_bin[::-1], prob_bin) / 2.) / (vbound[1:] - vbound[:-1])
-        pbin = sp.array(pbin)
+                single_mass.append(pmass)
+                prob_bin = sp.histogram(abs(rv_binoffset), bins=sp.append(0, vbord))[0] * 1. / rv_binoffset.size
+                pbin.append(sp.append(prob_bin[::-1], prob_bin) / 2. / (vbound[1:] - vbound[:-1]))
+        pbin = sp.array(pbin).T
         vmean = sp.array(vmean)
+        sigmean = sp.array(sigmean)
+        single_mass = sp.array(single_mass)
         pdet_single = sp.array(pdet_single)
         pdet_rvvar = sp.array(pdet_rvvar)
 
-        return fitter.BinaryFit(velocity, 0., 1., vbound, pbin, pdet_single, pdet_rvvar)
+        return fitter.BinaryFit(vmean, sigmean, single_mass, vbound, pbin, pdet_single, pdet_rvvar)
 
     def fake_dataset(self, nvel, vdisp, fbin, sigvel, mass=1., dates=(0., ), vmean=0.):
         """Creates a fake single-epoch radial velocity data for Monte Carlo simulations.
@@ -339,5 +349,6 @@ class OrbitalParameters(sp.recarray):
         """
         v_systematic = sp.randn(nvel) * vdisp
         v_bin_offset = sp.array([self[:nvel].velocity(mass, time)[:, 0] for time in dates])
+        v_bin_offset[sp.rand(nvel) < fbin, :] = 0.
         v_meas_offset = sp.randn(v_bin_offset.size).reshape(v_bin_offset.shape) * sp.atleast_1d(sigvel)[:, sp.newaxis]
         return sp.squeeze(v_systematic[:, sp.newaxis] + v_bin_offset + v_meas_offset)
