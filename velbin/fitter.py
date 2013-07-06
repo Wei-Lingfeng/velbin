@@ -62,5 +62,4 @@ class BinaryFit(object):
         likelihood_binary = sp.sum(self.pbin * weight / self.mass ** (1. / 3.), 0)
 
         log_likelihood_detection = sp.log(sp.prod(1 - fbin * self.pdet_single) * sp.prod(fbin * self.pdet_rvvar))
-        return sp.log(fbin_new * likelihood_binary + (1 - fbin_new) * likelihood_single)
         return sp.sum(sp.log(fbin_new * likelihood_binary + (1 - fbin_new) * likelihood_single)) + log_likelihood_detection
