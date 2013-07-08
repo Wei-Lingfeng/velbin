@@ -2,7 +2,7 @@ import scipy as sp
 import fitter
 import itertools
 
-def solar_bin(nbinaries=1e6):
+def solar(nbinaries=1e6):
     """Returns a randomly generated dataset of `nbinaries` solar-type binaries.
 
     These can be used to fit an observed radial velocity distribution or to generate random radial velocity datasets for Monte Carlo simulations.
@@ -18,7 +18,7 @@ def solar_bin(nbinaries=1e6):
     properties.draw_eccentricities()
     return properties
 
-def ob_bin(source, pmax=None, nbinaries=1e6):
+def ob_stars(source, pmax=None, nbinaries=1e6):
     """Returns a randomly generated dataset of `nbinaries` OB spectroscopic binaries.
 
     These can be used to fit an observed radial velocity distribution or to generate random radial velocity datasets for Monte Carlo simulations.
