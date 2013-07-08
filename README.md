@@ -4,7 +4,7 @@ velbin
 Overview
 ========
 
-This code convolves the radial velocity offsets due to binary orbital motions with a Gaussian to model an observed velocity distribution. This can be used to measure the mean velocity and velocity dispersion from an observed radial velocity distribution, corrected for binary orbital motions. For detailed information on the technique and many tests see Cottaar et al. (2012, ...) and Cottaar & Henault-Brunet (2013, in preperation). Here we only give information necesary to fit the code
+This code convolves the radial velocity offsets due to binary orbital motions with a Gaussian to model an observed velocity distribution. This can be used to measure the mean velocity and velocity dispersion from an observed radial velocity distribution, corrected for binary orbital motions. For detailed information on the technique and many tests see Cottaar et al. (2012, A&A, 547, 35) and Cottaar & Henault-Brunet (2013, in preperation). Here we only give information necesary to fit the code
 
 This code has been designed to fit single- or multi-epoch data with any arbitrary binary orbital parameter distribution (as long as it can be sampled properly), however it always assumes that the intrinsic velocity distribution (i.e. corrected for binary orbital motions) is a Gaussian.
 
@@ -40,7 +40,7 @@ All of these return an OrbitalParameters object, which is a subclass from the nu
 In addition the method `semi_major` computes the semi-major axes of the sampled binaries. There is no support to set the semi-major axes distribution directly. The method `velocity` computes the radial velocity and (instanteneous) proper motion due to binary orbital motions.
 
 Example: 
-Draw an orbital parameter distribution from Raghavan et al. (2010), using the a flat mass ratio distribution and a lower limit to the semi-major axis of 1 AU (as might be appropriate for solar-mass red giants):
+Draw an orbital parameter distribution from Raghavan et al. (2010, ApJS, 190, 1), using the a flat mass ratio distribution and a lower limit to the semi-major axis of 1 AU (as might be appropriate for solar-mass red giants):
 >>> import velbin
 >>> all_binaries = velbin.solar('Raghavan10')
 >>> all_binaries.draw_mass_ratio('flat')
