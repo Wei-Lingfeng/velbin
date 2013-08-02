@@ -11,6 +11,9 @@ def solar(nbinaries=1e6):
     - The log-normal period distribution from Raghavan et al. (2010, ApJS, 190, 1)
     - The slightly sloped mass ratio distribution between 0.1 and 1 from Reggiani & Meyer (2013, A&A, 553, 124).
     - A flat eccentricity distribution with a maximum eccentricity as observed in Raghavan et al. (2010) and characterized by Parker et al. (...)
+
+    Arguments:
+    - `nbinaries`: number of orbital parameters to draw.
     """
     properties = OrbitalParameters(nbinaries)
     properties.draw_period('Raghavan10')
@@ -24,12 +27,17 @@ def ob_stars(source, pmax=None, nbinaries=1e6):
     These can be used to fit an observed radial velocity distribution or to generate random radial velocity datasets for Monte Carlo simulations.
 
     The `source` parameter is used to select a reference setting the orbital parameter distribution. It should be one of:
-    - `Kiminki12': The binary properties found for 114 B3-O5 stars in Cyg OB2 (Kimkinki & Kobulnicky, 2012, ApJ, 751, 4)
+    - 'Kiminki12': The binary properties found for 114 B3-O5 stars in Cyg OB2 (Kimkinki & Kobulnicky, 2012, ApJ, 751, 4)
     - 'Sana12': The binary properties found for the O-type star population of six nearby Galactic open clusters (Sana et al., 2012, Science, 337, 444).
     - 'Sana13': The binary properties found for 360 O-type stars in 30 Doradus as part of the Tarantula survey (Sana et al, 2013, A&A, 550, 107).
 
     The maximum period in these distribution can be overwritten by setting `pmax`.
     In all cases a flat eccentricity distribution is used.
+
+    Arguments:
+    - `source`: A reference setting the orbital parameter distribution (one from ['Kiminki12', 'Sana12', 'Sana13'], see above)
+    - `pmax`: maximum period to include in the distribution (default set by `source`)
+    - `nbinaries`: number of orbital parameters to draw.
     """
     properties = OrbitalParameters(nbinaries)
     properties.draw_period(source, pmax=pmax)
