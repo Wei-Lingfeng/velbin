@@ -212,9 +212,11 @@ class OrbitalParameters(sp.recarray):
         mean_anomaly = (self.phase + time / self.period) * 2. * sp.pi
         ecc_anomaly = mean_anomaly
         old = sp.zeros(nbinaries) - 1.
-        while (abs(ecc_anomaly - old) > anomaly_offset).any():
+        count_iterations = 0
+        while (abs(ecc_anomaly - old) > anomaly_offset).any() and count_iterations < 20:
             old = ecc_anomaly
             ecc_anomaly = ecc_anomaly - (ecc_anomaly - self.eccentricity * sp.sin(ecc_anomaly) - mean_anomaly) / (1. - self.eccentricity * sp.cos(ecc_anomaly))
+            count_iterations += 1
 
         theta_orb = 2. * sp.arctan(sp.sqrt((1. + self.eccentricity) / (1. - self.eccentricity)) * sp.tan(ecc_anomaly / 2.))
         seperation = (1 - self.eccentricity ** 2) / (1 + self.eccentricity * sp.cos(theta_orb))
@@ -356,7 +358,7 @@ class OrbitalParameters(sp.recarray):
         - `vmean`: mean velocity in km/s.
         """
         v_systematic = sp.randn(nvel) * vdisp
-        v_bin_offset = sp.array([self[:nvel].velocity(mass, time)[:, 0] for time in dates])
-        v_bin_offset[sp.rand(nvel) < fbin, :] = 0.
+        v_bin_offset = sp.array([self[:nvel].velocity(mass, time)[0, :] for time in dates])
+        v_bin_offset[:, sp.rand(nvel) > fbin] = 0.
         v_meas_offset = sp.randn(v_bin_offset.size).reshape(v_bin_offset.shape) * sp.atleast_1d(sigvel)[:, sp.newaxis]
-        return sp.squeeze(v_systematic[:, sp.newaxis] + v_bin_offset + v_meas_offset)
+        return sp.squeeze(v_systematic[sp.newaxis, :] + v_bin_offset + v_meas_offset)
