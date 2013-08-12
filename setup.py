@@ -9,7 +9,7 @@ config = {
     'url': 'https://github.com/MichielCottaar/velbin',
     'download_url': 'https://github.com/MichielCottaar/velbin',
     'author_email': 'MichielCottaar@gmail.com',
-    'version': '0.1',
+    'version': '0.11',
     'install_requires': ['scipy'],
     'packages': ['velbin'],
     'scripts': [],
