@@ -301,7 +301,7 @@ class OrbitalParameters(sp.recarray):
         vbord = 10 ** sp.arange(log_minv, log_maxv, log_stepv)
         vbound = sp.append(-vbord[::-1], sp.append(0, vbord))
 
-        for mult_vel, mult_sigvel, pmass, epochs in itertools.izip_longest(velocity, sigvel, mass, dates):
+        for mult_vel, mult_sigvel, pmass, epochs in zip(sp.broadcast_arrays(velocity, sigvel, mass, dates)):
             epochs, mult_vel, mult_sigvel = sp.broadcast_arrays(epochs, mult_vel, mult_sigvel)
             if epochs.size == 1:
                 mean_rv = mult_vel[0]
