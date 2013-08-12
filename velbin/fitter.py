@@ -71,7 +71,7 @@ class BinaryFit(object):
         Arguments:
         - `fbin`: binary fraction of the stars in the cluster.
         """
-        return sp.log(sp.prod(1 - fbin * self.pdet_single) * sp.prod(fbin * self.pdet_rvvar))
+        return sp.sum(sp.log(1 - fbin * self.pdet_single)) + sp.sum(sp.log(fbin * self.pdet_rvvar))
 
     def __call__(self, vmean, vdisp, fbin):
         """Returns the log-likelihood that the observed radial velocity data is reproduced for a cluster with given parameters.
