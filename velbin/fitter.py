@@ -42,10 +42,10 @@ class BinaryFit(object):
         self.pdet_single = pdet_single
         self.pdet_rvvar = pdet_rvvar
 
-    def __call__(self, vmean, vdisp, fbin):
-        """Returns the log-likelihood that the observed radial velocity data is reproduced for a cluster with given parameters.
+    def individual_log_likelihood(self, vmean, vdisp, fbin):
+        """Computes array with the individual log-likelihoods for observing the (average) radial velocity of the observed (seemingly single) stars.
 
-        Maximizing the returned value gives the best-fit parameters for vmean, vdisp, and fbin (assuming flat priors).
+        Call the object for the total log-likelihood (which includes a contribution from RV-variables).
 
         Arguments:
         - `vmean`: mean velocity of the cluster in km/s.
@@ -61,5 +61,26 @@ class BinaryFit(object):
         weight = p_long[1:, :] - p_long[:-1, :]
         likelihood_binary = sp.sum(self.pbin * weight / self.mass ** (1. / 3.), 0)
 
-        log_likelihood_detection = sp.log(sp.prod(1 - fbin * self.pdet_single) * sp.prod(fbin * self.pdet_rvvar))
-        return sp.sum(sp.log(fbin_new * likelihood_binary + (1 - fbin_new) * likelihood_single)) + log_likelihood_detection
+        return sp.log(fbin_new * likelihood_binary + (1 - fbin_new) * likelihood_single)
+
+    def log_likelihood_detection(self, fbin):
+        """Calculates the log-likelihood of the RV-variables actually being detected and the seemingly single stars not.
+
+        Computes the binomial probability using the individual detection probability of every star
+
+        Arguments:
+        - `fbin`: binary fraction of the stars in the cluster.
+        """
+        return sp.log(sp.prod(1 - fbin * self.pdet_single) * sp.prod(fbin * self.pdet_rvvar))
+
+    def __call__(self, vmean, vdisp, fbin):
+        """Returns the log-likelihood that the observed radial velocity data is reproduced for a cluster with given parameters.
+
+        Maximizing the returned value gives the best-fit parameters for vmean, vdisp, and fbin (assuming flat priors).
+
+        Arguments:
+        - `vmean`: mean velocity of the cluster in km/s.
+        - `vdisp`: velocity dispersion of the cluster in km/s.
+        - `fbin`: binary fraction of the stars in the cluster.
+        """
+        return sp.sum(self.individual_log_likelihood(vmean, vdisp, fbin)) + self.log_likelihood_detection(fbin)
