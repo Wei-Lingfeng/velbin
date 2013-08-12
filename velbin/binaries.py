@@ -286,7 +286,11 @@ class OrbitalParameters(sp.recarray):
         - `log_maxv`: 10_log maximum of the largest velocity bin.
         - `log_stepv`: step size in 10_log(velocity) space.
         """
-        mass = sp.asarray(mass)
+        if sp.asarray(mass).ndim == 0:
+            mass = [mass] * len(velocity)
+        for test_length in ('sigvel', 'mass', 'dates'):
+            if len(locals()[test_length]) != len(velocity):
+                raise ValueError('%s does not have the same length as the velocity list' % test_length)
         unique_dates = sp.unique(reduce(sp.append, dates))
         vbin = {}
         for date in unique_dates:
@@ -301,7 +305,7 @@ class OrbitalParameters(sp.recarray):
         vbord = 10 ** sp.arange(log_minv, log_maxv, log_stepv)
         vbound = sp.append(-vbord[::-1], sp.append(0, vbord))
 
-        for mult_vel, mult_sigvel, pmass, epochs in zip(sp.broadcast_arrays(velocity, sigvel, mass, dates)):
+        for mult_vel, mult_sigvel, pmass, epochs in zip(velocity, sigvel, mass, dates):
             epochs, mult_vel, mult_sigvel = sp.broadcast_arrays(epochs, mult_vel, mult_sigvel)
             if epochs.size == 1:
                 mean_rv = mult_vel[0]
