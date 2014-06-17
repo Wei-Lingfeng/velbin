@@ -302,6 +302,7 @@ class OrbitalParameters(sp.recarray):
         pdet_single = []
         pdet_rvvar = []
         pbin = []
+        is_single = []
         vbord = 10 ** sp.arange(log_minv, log_maxv, log_stepv)
         vbound = sp.append(-vbord[::-1], sp.append(0, vbord))
 
@@ -338,14 +339,16 @@ class OrbitalParameters(sp.recarray):
                 single_mass.append(pmass)
                 prob_bin = sp.histogram(abs(rv_binoffset), bins=sp.append(0, vbord))[0] * 1. / rv_binoffset.size
                 pbin.append(sp.append(prob_bin[::-1], prob_bin) / 2. / (vbound[1:] - vbound[:-1]))
+            is_single.append(not rvvariable)
         pbin = sp.array(pbin).T
         vmean = sp.array(vmean)
         sigmean = sp.array(sigmean)
         single_mass = sp.array(single_mass)
         pdet_single = sp.array(pdet_single)
         pdet_rvvar = sp.array(pdet_rvvar)
+        is_single = sp.array(is_single, dtype='bool')
 
-        return fitter.BinaryFit(vmean, sigmean, single_mass, vbound, pbin, pdet_single, pdet_rvvar)
+        return fitter.BinaryFit(vmean, sigmean, single_mass, vbound, pbin, pdet_single, pdet_rvvar, is_single)
 
     def fake_dataset(self, nvel, vdisp, fbin, sigvel, mass=1., dates=(0., ), vmean=0.):
         """Creates a fake single-epoch radial velocity data for Monte Carlo simulations.

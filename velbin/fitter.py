@@ -18,8 +18,9 @@ class BinaryFit(object):
     - `pbin`: the probability distribution of the radial velocity offset due to binary orbital motions. The probability (defined per km/s) to have a velocity between vbin[i] and vbin[i + 1] is given by pbin[i]. In the single-epoch case this will be a single 1-dimensional array for a generic mass of 1 solar masses. In the multi-epoch case this will be a 2-dimensional array containing the probability distribution for every seemingly single star (given the observations of the star).
     - `pdet_single`: For all seemingly single stars: the probability that a binary would have been detected if the star is a binary (0 for the single-epoch case).
     - `pdet_rvvar`: For all stars with detected radial velocity variability: the probability that a binary would have been detected if the star is a binary (empy array for the single-epoch case).
+    - `is_single`: Boolean array marking which stars are single.
     """
-    def __init__(self, velocity, sigvel, mass, vbin, pbin, pdet_single=0., pdet_rvvar=sp.array([])):
+    def __init__(self, velocity, sigvel, mass, vbin, pbin, pdet_single=0., pdet_rvvar=sp.array([]), is_single=None):
         """Do not initialize BinaryFit directly.
         Use OrbitalParameters.single_epoch or OrbitalParameters.multi_epoch instead.
 
@@ -41,6 +42,10 @@ class BinaryFit(object):
         self.pbin = pbin
         self.pdet_single = pdet_single
         self.pdet_rvvar = pdet_rvvar
+        if is_single is None:
+            self.is_single = sp.ones(self.velocity.shape, dtype='bool')
+        else:
+            self.is_single = is_single
 
     def individual_log_likelihood(self, vmean, vdisp, fbin):
         """Computes array with the individual log-likelihoods for observing the (average) radial velocity of the observed (seemingly single) stars.
@@ -52,6 +57,9 @@ class BinaryFit(object):
         - `vdisp`: velocity dispersion of the cluster in km/s.
         - `fbin`: binary fraction of the stars in the cluster.
         """
+        vmean_all, vdisp_all, fbin_all = [sp.asarray(variable) for variable in vmean, vdisp, fbin]
+        vmean, vdisp, fbin = [variable[self.is_single] if variable.size > 1 else variable for variable in vmean_all, vdisp_all, fbin_all]
+
         nvel = len(self.velocity)
         fbin_new = fbin * (1 - self.pdet_single) / (1 - fbin * self.pdet_single)
         likelihood_single = sp.exp(-(self.velocity - vmean) ** 2 / (2 * (self.sigvel ** 2. + vdisp ** 2.))) / sp.sqrt(2 * sp.pi * (self.sigvel ** 2. + vdisp ** 2.))
@@ -71,12 +79,15 @@ class BinaryFit(object):
         Arguments:
         - `fbin`: binary fraction of the stars in the cluster.
         """
-        return sp.sum(sp.log(1 - fbin * self.pdet_single)) + sp.sum(sp.log(fbin * self.pdet_rvvar))
+        fbin_all = sp.array(fbin)
+        fbin_sin = fbin_all[self.is_single] if fbin_all.size > 1 else fbin_all
+        fbin_mult = fbin_all[~self.is_single] if fbin_all.size > 1 else fbin_all
+        return sp.sum(sp.log(1 - fbin_sin * self.pdet_single)) + sp.sum(sp.log(fbin_mult * self.pdet_rvvar))
 
     def __call__(self, vmean, vdisp, fbin):
         """Returns the log-likelihood that the observed radial velocity data is reproduced for a cluster with given parameters.
 
-        Maximizing the returned value gives the best-fit parameters for vmean, vdisp, and fbin (assuming flat priors).
+        Maximizing the returned value gives the best-fit parameters for vmean, vdisp, and fbin (assuming flat priors). These parameters can be single floats or arrays of the length of the original input velocity array.
 
         Arguments:
         - `vmean`: mean velocity of the cluster in km/s.
