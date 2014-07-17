@@ -13,10 +13,14 @@ The code is completely unrelated to the Russian village of the same name
 Installation
 ============
 The code can be downloaded from github using git (note that git will have to be installed):
-$ git pull https://github.com/MichielCottaar/velbin.git
+```shell
+git pull https://github.com/MichielCottaar/velbin.git
+```
 
 The default python installation should work. In short move into the downloaded directory and run
-$ python setup.py install
+```shell
+python setup.py install
+```
 This will copy velbin to the python library, making it available for importing in python
 
 Getting started
@@ -29,8 +33,8 @@ Velbin is limited to three main features:
 1. Sampling and editing a binary orbital parameter distribution
 ===============================================================
 After importing velbin, a variety of functions are available to sample an initial orbital parameter distribution (including a period, mass ratio, eccentricity, phase, theta, and inclination distribution, although the orientation (i.e. theta and inclination) distributions are ignored when fitting single-epoch data):
-- velbin.solar: provides distributions appropriate for solar-type stars
-- velbin.ob_stars: provides distributions appropriate for OB stars
+- `velbin.solar`: provides distributions appropriate for solar-type stars
+- `velbin.ob_stars`: provides distributions appropriate for OB stars
 
 All of these return an OrbitalParameters object, which is a subclass from the numpy record array. All of the numpy array goodies are available to edit the orbital parameter distribution. In addition to directly editing the array, three helper methods are provided:
 - `draw_period`: sample a period distribution
@@ -41,10 +45,12 @@ In addition the method `semi_major` computes the semi-major axes of the sampled 
 
 Example: 
 Draw an orbital parameter distribution from Raghavan et al. (2010, ApJS, 190, 1), using the a flat mass ratio distribution and a lower limit to the semi-major axis of 1 AU (as might be appropriate for solar-mass red giants):
->>> import velbin
->>> all_binaries = velbin.solar('Raghavan10')
->>> all_binaries.draw_mass_ratio('flat')
->>> selected_binaries = all_binaries[all_binaries.mass_ratio() > 1.]
+```python
+import velbin
+all_binaries = velbin.solar('Raghavan10')
+all_binaries.draw_mass_ratio('flat')
+selected_binaries = all_binaries[all_binaries.mass_ratio() > 1.]
+```
 
 2. Fitting an observed radial velocity distrution
 =================================================
@@ -58,11 +64,15 @@ Both of these methods take return a BinaryFit object. Given a value for the mean
 3. Create a mock radial velocity dataset
 ========================================
 Given an orbital parameter distribution stored in an OribitalParameters object `all_binaries`, a mock single-epoch radial velocity dataset of 10 radial velocities with velocity dispersion `vdisp` and binary fraction `fbin` can be created by
->>> mock_dataset = all_binaries.fake_dataset(5, vdisp, fbin, sigvel=1.)
+```python
+mock_dataset = all_binaries.fake_dataset(5, vdisp, fbin, sigvel=1.)
+```
 where we have set the measurement uncertainties (i.e. `sigvel`) to one km/s.
 
 A multi-epoch dataset can be simply created by setting the `dates` keyword parameter to an iterable with more than one element. The code
->>> two_epoch_dataset = all_binaries.fake_dataset(5, vdisp, fbin, sigvel=1., dates=(0, 1))
+```python
+two_epoch_dataset = all_binaries.fake_dataset(5, vdisp, fbin, sigvel=1., dates=(0, 1))
+```
 will create a dataset with two epochs, which are one year apart.
 
 These datasets can immediately used to provide the fitted radial velocities in the `single_epoch` or `multi_epoch` methods.
