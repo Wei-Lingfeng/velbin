@@ -4,7 +4,7 @@ velbin
 Overview
 ========
 
-This code convolves the radial velocity offsets due to binary orbital motions with a Gaussian to model an observed velocity distribution. This can be used to measure the mean velocity and velocity dispersion from an observed radial velocity distribution, corrected for binary orbital motions. For detailed information on the technique and many tests see Cottaar et al. (2012, A&A, 547, 35) and Cottaar & Henault-Brunet (2013, in preperation). Here we only give information necesary to fit the code
+This code convolves the radial velocity offsets due to binary orbital motions with a Gaussian to model an observed velocity distribution. This can be used to measure the mean velocity and velocity dispersion from an observed radial velocity distribution, corrected for binary orbital motions. For detailed information on the technique and many tests see Cottaar et al. (2012, A&A, 547, 35) and Cottaar & Henault-Brunet (2014, A&A, 562, 20). Here we only give information necesary to fit the code
 
 This code has been designed to fit single- or multi-epoch data with any arbitrary binary orbital parameter distribution (as long as it can be sampled properly), however it always assumes that the intrinsic velocity distribution (i.e. corrected for binary orbital motions) is a Gaussian.
 
