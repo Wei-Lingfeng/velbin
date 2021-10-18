@@ -15,6 +15,7 @@ def solar(nbinaries=1e6):
     Arguments:
     - `nbinaries`: number of orbital parameters to draw.
     """
+    nbinaries = int(nbinaries)
     properties = OrbitalParameters(nbinaries)
     properties.draw_period('Raghavan10')
     properties.draw_mass_ratio('Reggiani13')
@@ -39,6 +40,7 @@ def ob_stars(source, pmax=None, nbinaries=1e6):
     - `pmax`: maximum period to include in the distribution (default set by `source`)
     - `nbinaries`: number of orbital parameters to draw.
     """
+    nbinaries = int(nbinaries)
     properties = OrbitalParameters(nbinaries)
     properties.draw_period(source, pmax=pmax)
     properties.draw_mass_ratio(source)
@@ -65,6 +67,7 @@ class OrbitalParameters(sp.recarray):
     - `fake_dataset`: Creates a single- or multi-epoch fake radial velocity dataset for Monte Carlo simulations.
     """
     def __new__(self, nbinaries=1e6):
+        nbinaries = int(nbinaries)
         arr = sp.ones(nbinaries, dtype=[(name, 'f8') for name in ['period', 'mass_ratio', 'eccentricity', 'phase', 'theta', 'inclination']])
         arr['eccentricity'] = 0.
         arr['phase'] = sp.rand(nbinaries)
