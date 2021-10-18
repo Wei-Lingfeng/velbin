@@ -19,7 +19,7 @@ git pull https://github.com/MichielCottaar/velbin.git
 
 The default python installation should work. In short move into the downloaded directory and run
 ```shell
-python setup.py install
+python setup.py install --user
 ```
 This will copy velbin to the python library, making it available for importing in python
 
@@ -47,16 +47,16 @@ Example:
 Draw an orbital parameter distribution from Raghavan et al. (2010, ApJS, 190, 1), using the a flat mass ratio distribution and a lower limit to the semi-major axis of 1 AU (as might be appropriate for solar-mass red giants):
 ```python
 import velbin
-all_binaries = velbin.solar('Raghavan10')
+all_binaries = velbin.solar(nbinaries=1e6)
 all_binaries.draw_mass_ratio('flat')
-selected_binaries = all_binaries[all_binaries.mass_ratio() > 1.]
+selected_binaries = all_binaries[all_binaries.semi_major() > 1.]
 ```
 
 2. Fitting an observed radial velocity distrution
 =================================================
 The distributions of radial velocity offsets due to binary orbital motions are computed by two OrbitalParameters methods:
 - `single_epoch`: Computes the distribution of radial velocity offsets for all binaries as prepartion for fitting a single-epoch radial velocity dataset.
-- `multi-epoch`: Identifies the seemingly single star, identifies for every seemingly single star which binaries would not have been detected, and computes their radial velocity offset distribution. Uses a chi-squared test to distinguish RV-variables from seemingly single stars (the p-value threshold can be set and is 1e-4 by default).
+- `multi_epoch`: Identifies the seemingly single star, identifies for every seemingly single star which binaries would not have been detected, and computes their radial velocity offset distribution. Uses a chi-squared test to distinguish RV-variables from seemingly single stars (the p-value threshold can be set and is 1e-4 by default).
 Both expect the observed radial velocity distribution, the measurement uncertainties, and the masses of the observed stars to be provided.
 
 Both of these methods take return a BinaryFit object. Given a value for the mean velocity, velocity dispersion, and binary fraction of the cluster this object can be called to compute the log-likelihood to reproduce the provided radial velocity distribution. Maximizing this log-likelihood (using e.g. the routines in scipy.optimize or openopt) provides the best-fit values of the mean velocity, velocity dispersion, and binary fraction. Note that a best-fit binary fraction of 100% generally implies an overestimation of the velocity dispersion (Cottaar & Henault-Brunet, 2013, in preperation).
