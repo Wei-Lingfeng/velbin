@@ -371,9 +371,9 @@ class OrbitalParameters(sp.recarray):
         - `rv`: d * nvel array. rv observed in d epochs.
         - `bin_index`: binary index out of the first nvel stars in the OrbitalParameters class variable.
         """
-        bin_index = sp.rand(nvel) > fbin
+        bin_index = sp.rand(nvel) < fbin
         v_systematic = sp.randn(nvel) * vdisp
         v_bin_offset = sp.array([self[:nvel].velocity(mass, time)[0, :] for time in dates])
-        v_bin_offset[:, bin_index] = 0.
+        v_bin_offset[:, ~bin_index] = 0.
         v_meas_offset = sp.randn(v_bin_offset.size).reshape(v_bin_offset.shape) * sp.atleast_1d(sigvel)[sp.newaxis, :]
         return sp.squeeze(v_systematic[sp.newaxis, :] + v_bin_offset + v_meas_offset), bin_index
