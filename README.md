@@ -1,4 +1,4 @@
-velbin
+velbin (Python 2)
 ======
 
 Overview
