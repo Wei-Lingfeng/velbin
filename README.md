@@ -14,7 +14,7 @@ Installation
 ============
 The code can be downloaded from github using git (note that git will have to be installed):
 ```shell
-git pull https://github.com/MichielCottaar/velbin.git
+git clone https://github.com/Wei-Lingfeng/velbin.git
 ```
 
 The default python installation should work. In short move into the downloaded directory and run
