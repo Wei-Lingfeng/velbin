@@ -1,4 +1,5 @@
 import scipy as sp
+from scipy.stats import truncnorm
 import fitter
 import itertools
 
@@ -101,7 +102,11 @@ class OrbitalParameters(sp.recarray):
                 log_p_mean, sigma_log_p = 5.03, 2.28
             elif period == 'DM91':
                 log_p_mean, sigma_log_p = 4.8, 2.3
-            self['period'] = 10. ** (sp.random.randn(nbinaries) * sigma_log_p + log_p_mean) / 365.25
+            # self['period'] = 10. ** (sp.random.randn(nbinaries) * sigma_log_p + log_p_mean) / 365.25
+            # truncated normal distribution from 10^-1 to 10^10 days. See Figure 13 in Raghavan et al. (2010, ApJS, 190, 1).
+            a, b = (-1 - log_p_mean) / sigma_log_p, (10 - log_p_mean) / sigma_log_p
+            self['period'] = 10. ** (truncnorm.rvs(a, b, size=nbinaries) * sigma_log_p + log_p_mean) / 365.25
+            
         elif period in ('Sana12', 'Sana13', 'Kiminki12'):
             if period == 'Sana12':
                 slope, pmin, pmax_def = -0.55, 0.15, 3.5
