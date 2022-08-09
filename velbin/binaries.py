@@ -380,5 +380,5 @@ class OrbitalParameters(sp.recarray):
         v_systematic = sp.randn(nvel) * vdisp
         v_bin_offset = sp.array([self[:nvel].velocity(mass, time)[0, :] for time in dates])
         v_bin_offset[:, ~bin_index] = 0.
-        v_meas_offset = sp.randn(v_bin_offset.size).reshape(v_bin_offset.shape) * sp.atleast_1d(sigvel)[sp.newaxis, :]
+        v_meas_offset = sp.randn(v_bin_offset.size).reshape(v_bin_offset.shape) * sp.atleast_1d(sigvel) #[sp.newaxis, :]
         return sp.squeeze(v_systematic[sp.newaxis, :] + v_bin_offset + v_meas_offset), bin_index
